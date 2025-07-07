@@ -8,6 +8,7 @@ import fitz  # PyMuPDF
 import httpx
 import uvicorn
 import chromadb
+import markdown
 import google.generativeai as genai
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException
@@ -230,14 +231,15 @@ async def handle_chat(
     # 5. Get the AI's response
     try:
         response = llm.generate_content(prompt)
-        ai_answer = response.text
+        # Convert markdown response to HTML
+        ai_answer_html = markdown.markdown(response.text)
     except Exception as e:
-        ai_answer = f"Error generating response from AI: {e}"
+        ai_answer_html = f"<p>Error generating response from AI: {e}</p>"
 
     # 6. Update session memory
-    sessions[session_id].append({"human": question, "ai": ai_answer})
+    sessions[session_id].append({"human": question, "ai": ai_answer_html})
 
-    return JSONResponse(content={"human": question, "ai": ai_answer})
+    return JSONResponse(content={"human": question, "ai": ai_answer_html})
 
 
 if __name__ == "__main__":

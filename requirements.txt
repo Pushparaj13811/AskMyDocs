@@ -8,4 +8,5 @@ PyMuPDF
 python-multipart
 sentence-transformers
 python-dotenv
-google-generativeai 
+google-generativeai
+markdown 
