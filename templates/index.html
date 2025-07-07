@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat with Your Notes</title>
+    <style>
+      :root {
+        --sidebar-bg: #f0f4ff;
+        --main-bg: #ffffff;
+        --primary-bg: #e0ecff;
+        --button-bg: #2563eb;
+        --primary-color: #bfdbfe;
+        --border-color: #d1d5db;
+        --text-primary: #1e293b;
+        --text-secondary: #475569;
+        --text-light: #ffffff;
+        --item-hover-bg: #e6f0ff;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background-color: #f0f2f5;
+        margin: 0;
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        /* justify-content: center; */
+        align-items: center;
+      }
+      .container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        background-color: var(--main-bg);
+      }
+      .sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        background-color: var(--primary-bg);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--border-color);
+      }
+      .sidebar h1 {
+        font-size: 20px;
+        margin: 0 0 24px 0;
+      }
+      #upload-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px;
+        background-color: var(--button-bg);
+        color: var(--text-light);
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 24px;
+      }
+      #upload-button:hover {
+        opacity: 0.9;
+      }
+      .tabs {
+        display: flex;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .tab {
+        flex: 1;
+        padding: 10px;
+        text-align: center;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+      .tab.active {
+        background-color: var(--main-bg);
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .sidebar h2 {
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 16px 0 8px 0;
+      }
+      #document-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        overflow-y: auto;
+      }
+      .doc-item {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        border-radius: 6px;
+      }
+      .doc-item input {
+        margin-right: 12px;
+        width: 16px;
+        height: 16px;
+      }
+      .doc-item label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+      }
+      .doc-item:hover {
+        background-color: var(--item-hover-bg);
+      }
+
+      .chat-area {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .chat-history {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-width: 960px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      #placeholder {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        text-align: center;
+        color: var(--text-secondary);
+      }
+      #placeholder svg {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 16px;
+        color: #d1d1d6;
+      }
+      #placeholder h3 {
+        font-size: 20px;
+        margin: 0 0 8px 0;
+        color: var(--text-primary);
+      }
+      .message {
+        display: flex;
+        gap: 12px;
+        width: 80%;
+      }
+
+      .message .content {
+        padding: 12px 16px;
+        border-radius: 18px;
+        border: 1px solid var(--primary-bg);
+        width: 100%;
+        line-height: 1.5;
+      }
+      .message.human .content {
+        background: linear-gradient(
+          135deg,
+          var(--sidebar-bg),
+          var(--primary-bg)
+        );
+        color: var(--text-primary);
+      }
+      .message.ai .content {
+        background-color: var(--main-bg);
+        color: var(--text-primary);
+      }
+
+      .chat-form-container {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color);
+      }
+      #chat-form .chat-input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background-color: #f0f2f5;
+        padding: 8px;
+        border-radius: 12px;
+      }
+      #chat-form input[type="text"] {
+        flex-grow: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 16px;
+      }
+      #chat-form button {
+        background: var(--button-bg);
+        border: none;
+        color: var(--text-light);
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .spinner {
+        border: 3px solid #e0e0e0;
+        border-top: 3px solid var(--primary-color);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+      }
+      .message.ai.loading {
+        align-self: flex-start;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="sidebar">
+        <h1>Chat with Your Notes</h1>
+
+        <form id="upload-form" hidden>
+          <input
+            type="file"
+            name="file"
+            id="file-input"
+            accept=".pdf,.txt"
+            multiple
+          />
+        </form>
+        <button id="upload-button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Upload Document
+        </button>
+        <div id="upload-status"></div>
+
+        <h2>Your Documents</h2>
+        <div id="document-list">
+          <!-- Documents will be populated here by JavaScript -->
+        </div>
+      </div>
+      <div class="chat-area">
+        <div class="chat-history" id="chat-history">
+          {% if not chat_history %}
+          <div id="placeholder">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+              ></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <path
+                d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"
+              ></path>
+            </svg>
+            <h3>No File Selected</h3>
+            <p>
+              Please select a document from the sidebar to start a conversation.
+            </p>
+          </div>
+          {% endif %} {% for pair in chat_history %}
+          <div class="message human">
+            <div class="content">{{ pair.human }}</div>
+          </div>
+          <div class="message ai">
+            <div class="content">{{ pair.ai }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="chat-form-container">
+          <form id="chat-form">
+            <div class="chat-input-group">
+              <input
+                type="text"
+                name="question"
+                placeholder="Ask a question..."
+                required
+                autocomplete="off"
+              />
+              <button type="submit">Send</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const uploadButton = document.getElementById("upload-button");
+        const fileInput = document.getElementById("file-input");
+        const uploadForm = document.getElementById("upload-form");
+        const chatForm = document.getElementById("chat-form");
+        const uploadStatus = document.getElementById("upload-status");
+        const docListContainer = document.getElementById("document-list");
+        const chatHistory = document.getElementById("chat-history");
+        const placeholder = document.getElementById("placeholder");
+
+        function scrollToBottom() {
+          chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function setPlaceholderVisibility() {
+          if (
+            chatHistory.children.length > 1 ||
+            (chatHistory.children.length === 1 &&
+              chatHistory.children[0].id !== "placeholder")
+          ) {
+            if (placeholder) placeholder.style.display = "none";
+          } else {
+            if (placeholder) placeholder.style.display = "flex";
+          }
+        }
+
+        function addMessageToChat(sender, text) {
+          setPlaceholderVisibility();
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add("message", sender);
+          messageDiv.innerHTML = `<div class="content">${text}</div>`;
+          chatHistory.appendChild(messageDiv);
+          scrollToBottom();
+          return messageDiv;
+        }
+
+        async function updateDocumentList() {
+          try {
+            const response = await fetch("/documents");
+            const data = await response.json();
+            if (response.ok) {
+              docListContainer.innerHTML = "";
+              if (data.documents.length === 0) {
+                docListContainer.innerHTML =
+                  '<p style="color: var(--text-secondary); text-align: center; font-size: 14px;">No documents yet.</p>';
+              } else {
+                data.documents.forEach((doc) => {
+                  const itemDiv = document.createElement("div");
+                  itemDiv.classList.add("doc-item");
+                  itemDiv.innerHTML = `
+                            <input type="checkbox" name="document_names" value="${doc}" id="doc-${doc}">
+                            <label for="doc-${doc}">${doc}</label>
+                        `;
+                  docListContainer.appendChild(itemDiv);
+                });
+              }
+            }
+          } catch (error) {
+            console.error("Failed to update document list:", error);
+            docListContainer.innerHTML = "<p>Error loading documents.</p>";
+          }
+        }
+
+        uploadButton.addEventListener("click", () => fileInput.click());
+
+        fileInput.addEventListener("change", () => {
+          if (fileInput.files.length > 0) {
+            uploadForm.dispatchEvent(
+              new Event("submit", { cancelable: true, bubbles: true })
+            );
+          }
+        });
+
+        uploadForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData();
+          for (const file of fileInput.files) {
+            formData.append("file", file);
+          }
+
+          uploadStatus.textContent = "Uploading...";
+          try {
+            const response = await fetch("/upload", {
+              method: "POST",
+              body: formData,
+            });
+            const result = await response.json();
+            if (response.ok) {
+              uploadStatus.textContent = "Upload successful!";
+              await updateDocumentList();
+            } else {
+              uploadStatus.textContent = result.detail || "Upload failed.";
+            }
+          } catch (error) {
+            uploadStatus.textContent = "Upload error.";
+          }
+          setTimeout(() => (uploadStatus.textContent = ""), 3000);
+        });
+
+        chatForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const questionInput = chatForm.querySelector(
+            'input[name="question"]'
+          );
+          const question = questionInput.value.trim();
+          const selectedDocs = Array.from(
+            docListContainer.querySelectorAll("input:checked")
+          ).map((cb) => cb.value);
+
+          if (selectedDocs.length === 0) {
+            alert("Please select at least one document to chat with.");
+            return;
+          }
+          if (!question) return;
+
+          addMessageToChat("human", question);
+          questionInput.value = "";
+
+          const loadingMessage = addMessageToChat(
+            "ai",
+            '<div class="spinner"></div>'
+          );
+          loadingMessage.classList.add("loading");
+
+          const formData = new FormData();
+          formData.append("question", question);
+          selectedDocs.forEach((doc) => formData.append("document_names", doc));
+
+          try {
+            const response = await fetch("/chat", {
+              method: "POST",
+              body: formData,
+            });
+            const result = await response.json();
+
+            loadingMessage.remove();
+
+            if (response.ok) {
+              addMessageToChat("ai", result.ai);
+            } else {
+              addMessageToChat(
+                "ai",
+                `Error: ${result.detail || "Could not get a response."}`
+              );
+            }
+          } catch (error) {
+            loadingMessage.remove();
+            addMessageToChat("ai", "An unexpected error occurred.");
+          }
+        });
+
+        // Initial setup
+        scrollToBottom();
+        updateDocumentList();
+        setPlaceholderVisibility();
+      });
+    </script>
+  </body>
+</html>
