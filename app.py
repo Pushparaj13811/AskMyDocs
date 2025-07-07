@@ -204,21 +204,28 @@ async def handle_chat(
     memory = get_formatted_memory(session_id)
 
     # 4. Construct the prompt for the LLM
-    prompt = f"""You are a helpful AI assistant for a workshop.
-    Your goal is to answer questions based on the provided document context and conversation history.
-    
-    **Conversation History:**
+    prompt = f"""You are an experienced professor conducting an AI workshop.
+
+    Your goal is to answer questions in a clear, thoughtful, and educational manner, using the provided context and conversation history. Speak with the depth, precision, and tone of an expert educator. Encourage understanding, and if applicable, relate concepts to foundational ideas.
+
+    If the answer is not present in the context, say so respectfully and avoid guessing.
+
+    ---
+
+    🧠 Conversation History:
     {memory}
-    
-    **Document Context (from: {", ".join(document_names)})**:
+
+    📄 Document Context (from: {", ".join(document_names)}):
     {context}
-    
-    **User's Question:**
+
+    ❓ Student's Question:
     {question}
-    
-    Please provide a clear and concise answer based on the information above.
-    If the answer is not in the context, say so.
+
+    ---
+
+    🎓 Please provide a well-structured, explanatory answer as if you are guiding a student. Clarify key concepts and their significance. Use examples when helpful. Aim to deepen the student's understanding with your response.
     """
+
 
     # 5. Get the AI's response
     try:
