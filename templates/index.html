@@ -187,9 +187,15 @@
         );
         color: var(--text-primary);
       }
-      .message.ai .content {
-        background-color: var(--main-bg);
-        color: var(--text-primary);
+      .message.ai .content p:first-child { margin-top: 0; }
+      .message.ai .content p:last-child { margin-bottom: 0; }
+      .message.ai .content ul, .message.ai .content ol { padding-left: 20px; }
+      .message.ai .content code {
+          background-color: #e1e1e6;
+          padding: 0.2em 0.4em;
+          margin: 0;
+          font-size: 85%;
+          border-radius: 3px;
       }
 
       .chat-form-container {
@@ -312,7 +318,7 @@
             <div class="content">{{ pair.human }}</div>
           </div>
           <div class="message ai">
-            <div class="content">{{ pair.ai }}</div>
+            <div class="content">{{ pair.ai | safe }}</div>
           </div>
           {% endfor %}
         </div>
